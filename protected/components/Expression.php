@@ -22,14 +22,17 @@ class Expression {
 	 * @param unknown $logic
 	 */
 	function __construct($left_expression,$right_expression,$compare,$logic,$rule_data){
-		
+		//子表达式
 		$this->_left_expression = new ChildExpression($left_expression,$rule_data);
 		$this->_right_expression = new ChildExpression($right_expression,$rule_data);
 		
 		$this->_compare = $compare;
 		$this->_logic = $logic;
 		
-		$this->_left_expression->calc();
+	}
+	
+	function preload($rule_data){
+		$this->_left_expression->preloadData($rule_data);
 	}
 	
 	

@@ -25,22 +25,17 @@ class ChildExpression {
 		$this->_postfix_expression = $this->infixToPostfix($this->_expression);
 	}	
 	
-	public function calc(){
-		$this->preloadData();
-		$this->calc();
-	}
-	
-	public function preloadData(){
+	public function preloadData($rule_data){
 		foreach ($this->_postfix_expression as $operator){
 			$arr  = $operator->preloadData();
-				
+			
 			if( $arr ){
 				$method = 'preload'.ucfirst($arr[0]);
 				$params = array();
 				for ($i=0;$i<count($arr[1]); $i++){
 					$params[] = $operator->getData($arr[1][$i]);
 				}
-				call_user_func_array(array($this->_rule_data,$method),$params);
+				call_user_func_array(array($rule_data,$method),$params);
 			}
 				
 		}

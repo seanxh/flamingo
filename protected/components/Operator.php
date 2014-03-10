@@ -41,7 +41,7 @@ class Operator{
 	}
 	
 	function preloadData() {
-		
+	
 		if ($this->_type == self::FUNCTIONS) {
 			$func_stack = $this->_func_stack->get ();
 			$arr = $this->checkIsNeedPreload ( $func_stack );
@@ -53,7 +53,7 @@ class Operator{
 		return false;
 	}
 	
-	
+	//检查是否需要preload数据
 	function checkIsNeedPreload($arr){
 		$arr2 = array();
 		$flag = false;
@@ -78,28 +78,28 @@ class Operator{
 			if ( $stack[0] == FunctionsStack::BRACKET ){
 				if( $stack[1] == ')' ){
 					$bracket  -- ;
-					if($bracket == 0){
+					if($bracket == 0){//bracket为0，代表已经找到该函数的尾
 						break;
-					}else if($bracket == 1) {
-						$elements[] = ')';
+					}else if($bracket == 1) {//为1则代表还有,把之前的func() push进params
+						$elements[] = $stack;
 						$params[] = $elements;
 						$elements = array();
 					}else{
-						$elements[] = ')';
+						$elements[] = $stack;
 					}
 		
-				}else if($stack[1] == '('){
-					$elements[] = '(';
+				}else if($stack[1] == '('){//有子调用 ，array()
+					$elements[] = $stack;
 					$bracket ++;
 				}
 					
-			}else if( $stack[0] == FunctionsStack::FUNCTIONS  || $stack[0] == FunctionsStack::ARRAYS){
-				$elements[] = $stack[1];
-			}else{
-				if( $bracket > 1){
-					$elements[] = $stack[1];
-				}else{
-					$params[] = $stack[1];
+			}else if( $stack[0] == FunctionsStack::FUNCTIONS  || $stack[0] == FunctionsStack::ARRAYS){//是数组或函数名
+				$elements[] = $stack;
+			}else{//其它情况，依次PUSH进调用栈中
+				if( $bracket > 1){//如果还有括号
+					$elements[] = $stack;
+				}else{//已经没有括号了
+					$params[] = $stack;
 				}
 					
 			}
@@ -116,23 +116,35 @@ class Operator{
 		Calc::$FUNC_PRELOAD[$func_name][0],
 		$preload_params
 		);
+		
 	}
 	
 	function getData($variable){
 		
-		if( is_array($variable) ){
-			unset($variable[0]);
-			unset($variable[1]);
-			array_pop($variable);
-			$arr  = array();
-			foreach ($variable as $v){
-				$arr[] = $v;
+		if(is_array($variable) && !empty($variable)){
+			if( is_array($variable) ){
+				array_shift($variable);
+				array_pop($variable);
+				
+				if ( $variable[0][0] == FunctionsStack::ARRAYS ){
+					array_shift($variable);
+					$arr  = array();
+					foreach ($variable as $v){
+						$arr[] = $v[1];
+					}
+					return $arr;
+				}
+					
+				return null;
+			}else{
+				return $variable;
 			}
-			
-			return $arr;
+		}else if (is_array($variable)){
+				return array();
 		}else{
-			return $variable;
+			return 1;
 		}
+		
 		
 	}
 		
