@@ -47,9 +47,7 @@ class SiteController extends CController{
 		
 		$condition = new Condition($expressions,$rule_data);
 		$condition->preload();
-		
-		var_dump($rule_data[0]);
-		var_dump($rule_data[1]);
+		$condition->judgeCondition();
 		
 	}
 	

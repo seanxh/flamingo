@@ -199,4 +199,50 @@ class ChildExpression {
 		return $operator[$operator1] - $operator[$operator2];
 	}
 	
+	public function calc($rule_data,$key){
+		$postfix_stack = $this->_postfix_expression;
+		$stack2 = array();
+		
+		while(count($postfix_stack) > 0){
+			
+			$operator = array_shift($postfix_stack);
+			
+			switch ($operator->type){
+				case Operator::OPERATOR:
+					$v2 = array_pop($stack2);
+					$v1 = array_pop($stack2);
+					switch ($operator->value){
+						case '+':
+							$value = $v1+$v2;
+							break;
+						case '-':
+							$value = $v1-$v2;
+							break;
+						case '*':
+							$value = $v1*$v2;
+							break;
+						case '/':
+							$value = $v1/$v2;
+							break;
+					}
+					array_push($stack2, $value);
+					break;
+				case Operator::FUNCTIONS:
+				case Operator::INTEGER:
+				case Operator::VARIABLE:					
+					array_push($stack2, $operator->getValue($rule_data,$key) );
+					break;
+				default:
+					break;
+			}
+		}
+		
+		if( count($stack2) == 1){
+			return current($stack2);
+		}else{
+			throw new Exception('calc error');
+			return false;
+		}
+		
+	}
 }

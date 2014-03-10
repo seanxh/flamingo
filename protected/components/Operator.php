@@ -1,8 +1,8 @@
 <?php
 class Operator{
 	
-	private $_type;
-	private $_value;
+	public $type;
+	public $value;
 	const OPERATOR = 'operator';
 	const FUNCTIONS = 'function';
 	const INTEGER = 'integer';
@@ -11,38 +11,47 @@ class Operator{
 	const PENDING = 'pending';
 	const STRING = 'string';
 	
-	private $_func_stack;
+	/**
+	 * @var FunctionsStack
+	 */
+	private $_func_stack = null;
 	
 	function __construct($type,$value){
-		$this->_type = $type;
-		$this->_value = $value;
+		$this->type = $type;
+		$this->value = $value;
 		
-		$this->_func_stack = $this->analyseFuncStack($this->_value);
+		if($type == self::FUNCTIONS){
+			$this->_func_stack = $this->analyseFuncStack($this->value);
+		}
 	}
 	
 	function __toString(){
-		return strtolower($this->_type ) . ': ' . $this->_value;
+		return strtolower($this->type ) . ': ' . $this->value;
 	}
-	function getValue() {
-		switch ($this->_type) {
+	
+	
+	function getValue($rule_data,$key) {
+		switch ($this->type) {
 			case self::FUNCTIONS :
+				var_dump($this->_func_stack->get());
 				return 10;
 				break;
 			case self::VARIABLE :
-				return 20;
+				$k = ltrim( $this->value , '$');
+				return $rule_data[0][$key][$k];				
 				break;
 			case self::INTEGER:
-				return $this->_value;
+				return $this->value;
 				break;
 			case self::OPERATOR:
-				return $this->_value;
+				return $this->value;
 				break;
 		}
 	}
 	
 	function preloadData() {
 	
-		if ($this->_type == self::FUNCTIONS) {
+		if ($this->type == self::FUNCTIONS) {
 			$func_stack = $this->_func_stack->get ();
 			$arr = $this->checkIsNeedPreload ( $func_stack );
 			if ( $arr )
