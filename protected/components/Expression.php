@@ -10,9 +10,15 @@ class Expression {
 	
 	private $_right_expression = null;
 	
-	private $_logic = null;
+	public $logic = null;
 	
 	private $_compare = null;
+	
+	public $result = null;
+	
+	const LOGICAND = 'and';
+	
+	const  LOGICOR = 'or';
 	
 	/**
 	 * 构造方法
@@ -27,7 +33,7 @@ class Expression {
 		$this->_right_expression = new ChildExpression($right_expression,$rule_data);
 		
 		$this->_compare = $compare;
-		$this->_logic = $logic;
+		$this->logic = $logic;
 		
 	}
 	
@@ -43,24 +49,26 @@ class Expression {
 		$right_value = $this->_right_expression->calc($rule_data,$key);
 		switch ($this->_compare){
 			case '=':
-				return $left_value==$right_value;
+				$this->result = $left_value==$right_value;
 				break;
 			case '!=':
-				return $left_value != $right_value;
+				$this->result = $left_value != $right_value;
 				break;
 			case '>': 
-				return $left_value > $right_value;
+				$this->result = $left_value > $right_value;
 				break;
 			case '>=':
-				return $left_value >= $right_value;
+				$this->result = $left_value >= $right_value;
 				break;
 			case '<':
-				return $left_value < $right_value;
+				$this->result = $left_value < $right_value;
 				break;
 			case '<=':
-				return $left_value <= $right_value;
+				$this->result = $left_value <= $right_value;
 				break;
 		}
+		
+		return $this->result ;
 		
 	}	
 	

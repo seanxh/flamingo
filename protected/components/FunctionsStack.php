@@ -10,6 +10,7 @@ class  FunctionsStack{
 	const PENDING = 'pending';
 	const STRING = 'string';
 	const ARRAYS = 'array';
+	const ARRAYVAL = 'array_value';
 	
 	
 	private $_stack=array();
@@ -33,5 +34,117 @@ class  FunctionsStack{
 		return array_pop($this->_stack);
 	}
 	
+	function getValue($rule_data,$key){
+		
+		$method = new Method($rule_data, $key);
+		
+		$function_stack = $this->_stack;
+		
+		$stack2 = array();
+		
+		while( count( $function_stack ) > 0){
+			$element =  array_pop($function_stack);
+			switch($element[0] ){
+				case self::BRACKET:
+					if ($element[1] == ')'){
+						array_push($stack2, $element);
+					}else{//碰到(，把函数栈中的push出来，计算重新入栈
+						$func_ele_stack = array();
+						while( count($stack2) >0){
+							$ele = array_pop($stack2);
+							if( $ele[1] !=  ')'  ){
+								array_push($func_ele_stack, $ele);
+							}else{
+								break;
+							}
+						}
+						switch ($func_ele_stack[0][0]){
+							case self::ARRAYS://如果是数组
+								//array( array('array','array'),array('integer':'xxx'))
+								array_shift($func_ele_stack);
+								$arr = array();
+								foreach ($func_ele_stack as $value){
+									list($key,$arr_val) = $this->_getArrayVal($value,$rule_data, $key);
+									if( $key != 0 ){
+										$arr[$key] = $arr_val;
+									}else{
+										array_push($arr, $arr_val);
+									}
+								}
+								array_push($stack2, array(self::ARRAYVAL,$arr) );
+								break;
+							case self::FUNCTIONS:
+								$function_name = array_shift($func_ele_stack);
+								$function_name = $function_name[1];
+								$params = array();
+								foreach ($func_ele_stack as $parameter){
+									$params[] = $parameter[1];
+								}
+								array_push($stack2 , call_user_func_array(array($method,$function_name), $params) );
+								break;
+							default:
+								break;
+						}
+						
+					}
+					break;
+				case self::INTEGER:
+				case self::STRING:
+				case self::VARIABLE:
+				case self::FUNCTIONS:
+				case self::ARRAYS:
+					array_push($stack2, $element);
+					break;
+			}
+			
+		}
+		
+		if( count($stack2) == 1){
+			return current($stack2);
+		}else{
+			throw new Exception('calc error');
+			return false;
+		}
+		
+	}
+	
+	private function _getVal($val, $rule_data, $key){
+		
+		$val = ltrim($val,'$');
+		if(isset( $rule_data[0][$key][$val] )){
+			return $rule_data[0][$key][$val];
+		}
+		return 0;
+		
+	}
+	
+	private function _getArrayVal($value,$rule_data,$key){
+			$arr_key  = 0;
+			$arr_val = 0;
+			switch ($value[0] ){
+				case self::INTEGER:
+					return array($arr_key,$value[0]);
+					break;
+				case self::STRING:
+					$arr = explode(':', $value[1]);
+					if(count($arr ) > 1){
+						$arr_key = $arr[0];
+						$arr_val = $arr[1];
+					}else{
+						$arr_val = $value[1];
+					}
+						
+					if( strstr($arr_key, '$') === 0 ){
+						$arr_key = $this->_getVal($arr_key, $rule_data, $key);
+					}
+						
+					if( strstr($arr_val, '$') === 0 ){
+						$arr_val = $this->_getVal($arr_val, $rule_data, $key);
+					}
+						
+					return array($arr_key,$arr_val);
+			}
+			
+	}
 	
 }

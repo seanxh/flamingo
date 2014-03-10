@@ -33,7 +33,7 @@ class Operator{
 	function getValue($rule_data,$key) {
 		switch ($this->type) {
 			case self::FUNCTIONS :
-				var_dump($this->_func_stack->get());
+				$this->_func_stack->getValue($rule_data,$key);
 				return 10;
 				break;
 			case self::VARIABLE :
