@@ -55,6 +55,11 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 		$this->_condition= empty($rule->conditions) ? '' :  $rule->conditions;
 	}
 	
+	/**
+	 * 预加载函数
+	 * @param unknown $group
+	 * @param number $cycle
+	 */
 	public function preloadGroup($group,$cycle=1){
 		$first = $this->offsetGet(0);
 		
@@ -70,7 +75,7 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 		$this->offsetSet(0, $first_group);
 		
 		$values = $this->offsetGet($cycle);
-		$new_values;
+		$new_values = array();
 		foreach ($values as $key=>$value){
 			$new_key = '';
 			foreach ($group as $g){

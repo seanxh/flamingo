@@ -43,10 +43,12 @@ class Expression {
 	
 	
 	function bool($rule_data,$key){
-		
+// 		echo $this->_left_expression."\n";
 		$left_value = $this->_left_expression->calc($rule_data,$key);
-		
+// 		echo $left_value."\n";
+// 		echo $this->_right_expression."\n";
 		$right_value = $this->_right_expression->calc($rule_data,$key);
+// 		echo $right_value."\n";
 		switch ($this->_compare){
 			case '=':
 				$this->result = $left_value==$right_value;

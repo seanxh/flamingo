@@ -11,6 +11,14 @@ class Method {
 	}
 	
 	public function prev($column,$group,$cycle=1){
-		return $this->_rule_data[ $cycle ] [ $this->_key ] [ $column ];
+// 		var_dump($column);
+// 		var_dump($cycle);
+		if( isset( $this->_rule_data[ $cycle ] [ $this->_key ] [ $column ]) )
+			return $this->_rule_data[ $cycle ] [ $this->_key ] [ $column ];
+		return 0;
+	}
+	
+	public function prevHour($column,$group,$cycle=1){
+		
 	}
 }

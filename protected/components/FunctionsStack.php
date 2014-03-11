@@ -2,16 +2,20 @@
 
 class  FunctionsStack{
 	
-	const OPERATOR = 'operator';
-	const FUNCTIONS = 'function';
-	const INTEGER = 'integer';
-	const VARIABLE = 'variable';
-	const BRACKET = 'bracket'; 
-	const PENDING = 'pending';
-	const STRING = 'string';
-	const ARRAYS = 'array';
-	const ARRAYVAL = 'array_value';
+	const OPERATOR = 'operator';//操作符
+	const FUNCTIONS = 'function';//函数名
+	const INTEGER = 'integer';//整型字符
+	const VARIABLE = 'variable';//变量
+	const BRACKET = 'bracket'; //括号
+	const PENDING = 'pending';//未决
+	const STRING = 'string';//字符串
+	const ARRAYS = 'array';//数组（类似函数名)
+	const ARRAYVAL = 'array_value';//数组值。变量
 	
+	public static $FUNC_PRELOAD = array(
+			'prev' => array('group',1,array(2,1)), // 需要prev的函数名=>preload函数,需要取原函数的第几个参数作为preload的参数，如果为数组，可以指定默认值
+			'next'=>array('count'),
+	);
 	
 	private $_stack=array();
 	
@@ -108,6 +112,9 @@ class  FunctionsStack{
 		
 	}
 	
+	/*
+	 * 获取一个变量的值
+	 */
 	private function _getVal($val, $rule_data, $key){
 		
 		$val = ltrim($val,'$');
@@ -118,6 +125,13 @@ class  FunctionsStack{
 		
 	}
 	
+	/**
+	 * 获取一个数组的值
+	 * @param unknown $value
+	 * @param unknown $rule_data
+	 * @param unknown $key
+	 * @return multitype:number unknown |multitype:Ambigous <unknown, number> number
+	 */
 	private function _getArrayVal($value,$rule_data,$key){
 			$arr_key  = 0;
 			$arr_val = 0;

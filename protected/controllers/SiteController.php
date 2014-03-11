@@ -44,7 +44,6 @@ class SiteController extends CController{
 			$expressions[]  = new Expression($expression['left'], $expression['right'], $expression['compare'] , $expression['logic'], $rule_data);
 		}
 		
-		
 		$condition = new Condition($expressions,$rule_data);
 		$condition->preload();
 		$condition->judgeCondition();
