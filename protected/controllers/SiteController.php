@@ -47,7 +47,7 @@ class SiteController extends CController{
 		$condition = new Condition($expressions,$rule_data);
 		$condition->preload();
 		$alert_data = $condition->judgeCondition();
-		
+// 		echo "------------------------------------------------\n";
 		if( count($alert_data) > 0 ){
 			$alarm = new Alarm($rule);
 			

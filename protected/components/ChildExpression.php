@@ -250,6 +250,7 @@ class ChildExpression {
 				case Operator::FUNCTIONS:
 				case Operator::INTEGER:
 				case Operator::VARIABLE:
+// 					echo $operator."\n";
 					$value = $operator->getValue($rule_data,$key);
 					/* if ($operator->type == Operator::FUNCTIONS ){
 						echo $operator."::$value\n";
