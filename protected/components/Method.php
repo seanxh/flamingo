@@ -18,6 +18,10 @@ class Method {
 		return 0;
 	}
 	
+	public function count(){
+		return count($this->_rule_data[0]);
+	}
+	
 	public function prevHour($column,$group,$cycle=1){
 		
 	}

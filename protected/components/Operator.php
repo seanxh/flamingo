@@ -150,9 +150,8 @@ class Operator{
 	}
 	
 	function getData($variable){
-		
 		if(is_array($variable) && !empty($variable)){//主要是分析数组值
-			if( is_array($variable) ){
+			if( is_array($variable[0]) ){
 				array_shift($variable);//把两端括号pop掉
 				array_pop($variable);
 				
@@ -172,7 +171,7 @@ class Operator{
 					
 				return null;
 			}else{
-				return $variable;
+				return $variable[1];
 			}
 		}else if (is_array($variable)){
 				return array();

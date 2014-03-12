@@ -21,7 +21,7 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 	
 	private $_filed;
 	
-	private $_data; 
+	protected  $_data; 
 	
 	public function __construct($dsn,$username,$password,$charset,$log_config,$rule,$cycle_timestamp=0){
 		parent::__construct($dsn,$username,$password);
@@ -48,6 +48,9 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 			$this->current_cycle_timestamp = intval( time() / $this->_log_cycle )  * $this->_log_cycle;
 	}
 	
+	public function pp(){
+		var_dump($this->_data);
+	}
 	
 	public function setRule($rule){
 		$this->rule = $rule;
@@ -75,6 +78,7 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 		$this->offsetSet(0, $first_group);
 		
 		$values = $this->offsetGet($cycle);
+		
 		$new_values = array();
 		foreach ($values as $key=>$value){
 			$new_key = '';
@@ -136,6 +140,11 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 			return date( "'Y-m-d H:i:s'",$this->current_cycle_timestamp - $index*$this->_log_cycle );
 	}
 	
+	public function calcCycleIndex($str_time){
+		$time = strtotime($str_time);
+		return ceil( (  $this->current_cycle_timestamp - $time ) /  $this->_log_cycle ) ;
+	}
+	
 	public function count() {
 		return count($this->_data);
 	}
@@ -157,7 +166,7 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
     }
 
     function valid() {
-        return true;
+         return ( $this->current() !== false ); 
     }
 	
 	/**

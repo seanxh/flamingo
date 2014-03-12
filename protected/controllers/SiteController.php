@@ -46,7 +46,13 @@ class SiteController extends CController{
 		
 		$condition = new Condition($expressions,$rule_data);
 		$condition->preload();
-		$condition->judgeCondition();
+		$alert_data = $condition->judgeCondition();
+		
+		if( count($alert_data) > 0 ){
+			$alarm = new Alarm($rule);
+			
+			$alarm->oneMail($alert_data);
+		}
 		
 	}
 	

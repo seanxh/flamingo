@@ -5,7 +5,9 @@ class Condition {
 	 * @var Array[Expression]
 	 */
 	public $expressions;
-	
+	/**
+	 * @var RuleData
+	 */
 	public $rule_data;
 	
 	/**
@@ -30,8 +32,9 @@ class Condition {
 	
 	public function judgeCondition(){
 	
-		$alert_data = array();
-		
+		$alert_data = new AlertData($this->rule_data->current_cycle_timestamp);
+		$alert_arr = array();
+		 
 		foreach( $this->rule_data[0] as $key=>$value){
 			
 			foreach ($this->expressions as $expression){
@@ -64,12 +67,24 @@ class Condition {
 				}
 			}
 			
-			if ( $boolean )
-				$alert_data[0][$key] = $this->rule_data[0][$key];
+			if ($boolean ){
+				foreach ($this->rule_data as $cycle=>$value){
+					if ( !isset($alert_arr[$cycle]) ) {
+						$alert_arr[$cycle] = array();
+					}
+					$alert_arr[$cycle][$key] = $value[$key];
+				}
+			}
 			
 		}
 		
-		var_dump($alert_data);
+		foreach ( $alert_arr as $cycle=>$value){
+			$alert_data[$cycle] = $value;
+		}
+		
+// 		$alert_data->pp();
+		
+		return $alert_data;
 		
 	}
 	

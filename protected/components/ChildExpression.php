@@ -42,6 +42,7 @@ class ChildExpression {
 				for ($i=0;$i<count($arr[1]); $i++){
 					$params[] = $operator->getData($arr[1][$i]);
 				}
+				
 				call_user_func_array(array($rule_data,$method),$params);
 			}
 				
