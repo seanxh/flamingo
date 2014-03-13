@@ -25,4 +25,5 @@ class Method {
 	public function prevHour($column,$group,$cycle=1){
 		
 	}
+	
 }

@@ -19,6 +19,11 @@ class  FunctionsStack{
 	
 	private $_stack=array();
 	
+	public $PROCESS_CLASS = array(
+		'Method',
+		'AlertDeploy',
+	) ;
+	
 	public function __construct(){
 		
 	}
@@ -38,9 +43,9 @@ class  FunctionsStack{
 		return array_pop($this->_stack);
 	}
 	
-	function getValue($rule_data,$key){
+	function getValue($rule_data,$key,$type='Method'){
 		
-		$method = new Method($rule_data, $key);
+		$method = new $type($rule_data, $key);
 		
 		$function_stack = $this->_stack;
 		

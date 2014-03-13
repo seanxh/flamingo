@@ -37,11 +37,11 @@ class monitor_rule extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('log_id,monitor_name,filter_data_condition,is_alert_everytime,is_alert_everytime,alert_in_cycles,alert_when_gt_times,alert_title,alert_head,alert_content,alert_receiver,wait_time,status,fields,conditions', 'required'),
-			array('log_id,monitor_name,filter_data_condition,is_alert_everytime,is_alert_everytime,alert_in_cycles,alert_when_gt_times,alert_title,alert_head,alert_content,alert_receiver,wait_time,status,fields,conditions', 'safe'),
+			array('log_id,monitor_name,alert_deploy_id,filter_data_condition,is_alert_everytime,is_alert_everytime,alert_in_cycles,alert_when_gt_times,alert_title,alert_head,alert_content,alert_receiver,wait_time,status,fields,conditions', 'required'),
+			array('log_id,monitor_name,alert_deploy_id,filter_data_condition,is_alert_everytime,is_alert_everytime,alert_in_cycles,alert_when_gt_times,alert_title,alert_head,alert_content,alert_receiver,wait_time,status,fields,conditions', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id,log_id,monitor_name,filter_data_condition,is_alert_everytime,is_alert_everytime,alert_in_cycles,alert_when_gt_times,alert_title,alert_head,alert_content,alert_receiver,wait_time,status,fields,conditions', 'safe', 'on'=>'search'),
+			array('id,log_id,monitor_name,alert_deploy_id,filter_data_condition,is_alert_everytime,is_alert_everytime,alert_in_cycles,alert_when_gt_times,alert_title,alert_head,alert_content,alert_receiver,wait_time,status,fields,conditions', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -55,6 +55,7 @@ class monitor_rule extends CActiveRecord
 		return array(
 			'log_config'	=> array(self::BELONGS_TO, 'log_config', 'log_id'),
 			'condition' => array(self::HAS_MANY,'monitor_condition','rule_id'),
+			'alert_deploy'=>array(self::BELONGS_TO,'alert_deploy','alert_deploy_id'),
 		);
 	}
 

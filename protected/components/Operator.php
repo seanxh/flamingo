@@ -30,14 +30,32 @@ class Operator{
 	}
 	
 	
-	function getValue($rule_data,$key) {
+	function getValue($rule_data,$key,$func_class='Method') {
 		switch ($this->type) {
 			case self::FUNCTIONS :
-				return $this->_func_stack->getValue($rule_data,$key);
+				return $this->_func_stack->getValue($rule_data,$key,$func_class);
 				break;
 			case self::VARIABLE :
 				$k = ltrim( $this->value , '$');
 				return $rule_data[0][$key][$k];				
+				break;
+			case self::INTEGER:
+				return $this->value;
+				break;
+			case self::OPERATOR:
+				return $this->value;
+				break;
+		}
+	}
+	
+	function getAlarmValue($user){
+		switch ($this->type) {
+			case self::FUNCTIONS :
+				return $this->_func_stack->getValue($rule_data,$key,$func_class);
+				break;
+			case self::VARIABLE :
+				$k = ltrim( $this->value , '$');
+				return $rule_data[0][$key][$k];
 				break;
 			case self::INTEGER:
 				return $this->value;

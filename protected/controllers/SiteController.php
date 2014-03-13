@@ -1,7 +1,10 @@
 <?php
 class SiteController extends CController{
 	
-	public function init(){}
+	public function init(){
+		date_default_timezone_set('Asia/Shanghai');
+		header('Content-type: text/html; charset=utf-8');
+	}
 	
 	
 	public function actionIndex(){
@@ -41,16 +44,18 @@ class SiteController extends CController{
 			//右式必须是一个数字
 			if( !is_numeric($expression['right']) ) throw new Exception('右式必须是一个表达式');
 			
-			$expressions[]  = new Expression($expression['left'], $expression['right'], $expression['compare'] , $expression['logic'], $rule_data);
+			$expressions[]  = new Expression($expression['left'], $expression['right'], $expression['compare'] , $expression['logic']);
 		}
 		
 		$condition = new Condition($expressions,$rule_data);
 		$condition->preload();
 		$alert_data = $condition->judgeCondition();
+		
 // 		echo "------------------------------------------------\n";
+
 		if( count($alert_data) > 0 ){
 			$alarm = new Alarm($rule);
-			
+			$alarm->multiMail($alert_data);
 			$alarm->oneMail($alert_data);
 		}
 		

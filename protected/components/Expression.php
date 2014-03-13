@@ -27,10 +27,10 @@ class Expression {
 	 * @param unknown $compare
 	 * @param unknown $logic
 	 */
-	function __construct($left_expression,$right_expression,$compare,$logic,$rule_data){
+	function __construct($left_expression,$right_expression,$compare,$logic){
 		//子表达式
-		$this->_left_expression = new ChildExpression($left_expression,$rule_data);
-		$this->_right_expression = new ChildExpression($right_expression,$rule_data);
+		$this->_left_expression = new ChildExpression($left_expression);
+		$this->_right_expression = new ChildExpression($right_expression);
 		
 		$this->_compare = $compare;
 		$this->logic = $logic;

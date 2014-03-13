@@ -18,14 +18,20 @@ class ChildExpression {
 	/**
 	 * @var RuleData
 	 */
-	private $_rule_data;
+// 	private $_rule_data;
 	
 	private $_postfix_expression; 
 	
-	public function  __construct($expression,$rule_data){
+	/**
+	 * @var string
+	 */
+	private $_func_class;
+	
+	public function  __construct($expression,$function_class='Method'){
 		$this->_expression = $expression;
-		$this->_rule_data = $rule_data;
+// 		$this->_rule_data = $rule_data;
 		$this->_postfix_expression = $this->infixToPostfix($this->_expression);
+		$this->_func_class = $function_class;
 	}	
 	
 	public function __toString(){
@@ -212,21 +218,15 @@ class ChildExpression {
 		return $operator[$operator1] - $operator[$operator2];
 	}
 	
-	/**
-	 * 计算表达式
-	 * @param unknown $rule_data
-	 * @param unknown $key
-	 * @throws Exception
-	 * @return mixed|boolean
-	 */
-	public function calc($rule_data,$key){
+	
+	private function _calc($type,$data){
 		$postfix_stack = $this->_postfix_expression;
 		$stack2 = array();
 		
 		while(count($postfix_stack) > 0){
-			
+				
 			$operator = array_shift($postfix_stack);
-			
+				
 			switch ($operator->type){
 				case Operator::OPERATOR:
 					$v2 = array_pop($stack2);
@@ -250,10 +250,15 @@ class ChildExpression {
 				case Operator::FUNCTIONS:
 				case Operator::INTEGER:
 				case Operator::VARIABLE:
-// 					echo $operator."\n";
-					$value = $operator->getValue($rule_data,$key);
+					if ( $type == 'data' ){
+						$value= call_user_func_array(array($operator,'getValue'), $data);
+// 						$value = $operator->getValue($rule_data,$key,$this->_func_class);
+					} else{
+						$value  = 0;
+					}
+					// 					echo $operator."\n";
 					/* if ($operator->type == Operator::FUNCTIONS ){
-						echo $operator."::$value\n";
+					 echo $operator."::$value\n";
 					}  */
 					array_push($stack2,  $value);
 					break;
@@ -268,6 +273,19 @@ class ChildExpression {
 			throw new Exception('calc error');
 			return false;
 		}
-		
+	}
+	
+	/**
+	 * 计算表达式
+	 * @param unknown $rule_data
+	 * @param unknown $key
+	 * @throws Exception
+	 * @return mixed|boolean
+	 */
+	public function calc($rule_data,$key){
+		return $this->_calc('data',array($rule_data,$key,$this->_func_class));
+	}
+	
+	public function calc_alarm($username){
 	}
 }
