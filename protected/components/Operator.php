@@ -31,6 +31,7 @@ class Operator{
 	
 	
 	function getValue($rule_data,$key,$func_class='Method') {
+		
 		switch ($this->type) {
 			case self::FUNCTIONS :
 				return $this->_func_stack->getValue($rule_data,$key,$func_class);
@@ -43,6 +44,9 @@ class Operator{
 				return $this->value;
 				break;
 			case self::OPERATOR:
+				return $this->value;
+				break;
+			case self::STRING:
 				return $this->value;
 				break;
 		}
@@ -67,7 +71,7 @@ class Operator{
 	}
 	
 	function preloadData() {
-	
+// 	echo $this->type ."\n";
 		if ($this->type == self::FUNCTIONS) {
 			$func_stack = $this->_func_stack->get ();
 			/* foreach ($func_stack as $v){
@@ -228,24 +232,29 @@ class Operator{
 				$element[] = $char;
 				if($type == null)//如果是以字母开头，则有可能是函数名也有可能是字符串
 					$type = FunctionsStack::PENDING;
+				else if($type == FunctionsStack::INTEGER)//如果整数中包含除数字外的字符，则为字符串
+					$type = FunctionsStack::STRING;
 				continue;
 			}else if($char == '$'){
 				$element[] = $char;
 				if($type == null)//如果以$符开头，则为变量
 					$type = FunctionsStack::VARIABLE;
+				else if($type == FunctionsStack::INTEGER)//如果整数中包含除数字外的字符，则为字符串
+					$type = FunctionsStack::STRING;
 				continue;
 			}else if($char == ','){
 // 				$element[] = $char;
 				if(!empty($element)){//如果是逗号，且之前处于未决状态，则应该是一个字符串。类似array(abc,ccc)异或prev(abc,addd)
-					if($type == FunctionsStack::PENDING){
+					if($type == FunctionsStack::PENDING)
 						$type = FunctionsStack::STRING;
-					}
+					else if($type == FunctionsStack::INTEGER)//如果整数中包含除数字外的字符，则为字符串
+						$type = FunctionsStack::STRING;
 					$func_stack->push( $type,implode('', $element) );
 					$element = array();
 					$type = null;
 				}
 				continue;
-			}else if($char == ':' || $char=='_'){//如果碰到以下字符，直接入栈
+			}else if($char == ':' || $char=='_' || $char=='.'){//如果碰到以下字符，直接入栈
 				$element[] = $char;
 				continue;
 			}
@@ -279,8 +288,8 @@ class Operator{
 
 /* 		foreach ($func_stack->get() as $k=>$v){
 			echo $v[0].':' . $v[1]."\n";
-		} */
-		
+		}
+		 */
 		return $func_stack;
 	}
 	

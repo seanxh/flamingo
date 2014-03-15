@@ -11,12 +11,13 @@ class SiteController extends CController{
 		
 // 		$time = time();
 		$time = strtotime('2014-03-09 23:19:00');
-		$monitor_id = 1;
+		$monitor_id = 3;
 		$rule = monitor_rule::model()->findByPk($monitor_id);
 		
 		$log_config = $rule->log_config;
 		
-		$cycle_time = intval($time/$log_config->log_cycle)*$log_config->log_cycle;
+		
+		$cycle_time = ($log_config->log_type) ? time() :  intval($time/$log_config->log_cycle)*$log_config->log_cycle;
 		
 		$database = $log_config->database;
 		
@@ -41,16 +42,16 @@ class SiteController extends CController{
 			foreach($con->operation_expression as $child_expression){
 				$expression[$child_expression->left_or_right] = $child_expression->expression;
 			}
+			
+// 			var_dump($expression['right']);exit;
 			//右式必须是一个数字
-			if( !is_numeric($expression['right']) ) throw new Exception('右式必须是一个表达式');
+// 			if( !is_numeric($expression['right']) ) throw new Exception('右式必须是一个表达式');
 			
 			$expressions[]  = new Expression($expression['left'], $expression['right'], $expression['compare'] , $expression['logic']);
 		}
-		
 		$condition = new Condition($expressions,$rule_data);
 		$condition->preload();
 		$alert_data = $condition->judgeCondition();
-		
 // 		echo "------------------------------------------------\n";
 
 		if( count($alert_data) > 0 ){

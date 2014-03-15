@@ -5,17 +5,12 @@
  *
  * The followings are the available columns in table 'budget_unit':
  * @property integer $id
- * @property string $log_name
- * @property string $table_name
- * @property int $database_id
- * @property string time_column
- * @property int log_cycle
- * @property int log_type 
+ * @property string $name
+ * @property string $op_users
+ * @property string $log
  */
-class log_config extends CActiveRecord
+class monitor_rule_join extends CActiveRecord
 {
-	const  NOCYCLE = 1;
-	const WITHCYCLE = 0;
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
@@ -31,7 +26,7 @@ class log_config extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return 'log_config';
+		return 'monitor_rule_join';
 	}
 
 	/**
@@ -42,11 +37,11 @@ class log_config extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('log_name,table_name,database_id,time_column,log_cycle,log_type', 'required'),
-			array('log_name,table_name,database_id,time_column,log_cycle,log_type', 'safe'),
+			array('rule_id,table_name,left_condition,right_condition', 'required'),
+			array('rule_id,table_name,left_condition,right_condition', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id,log_name,table_name,database_id,time_column,log_cycle,log_type', 'safe', 'on'=>'search'),
+			array('id,rule_id,table_name,left_condition,right_condition', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -58,7 +53,7 @@ class log_config extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'database'	=> array(self::BELONGS_TO, 'database_config', 'database_id'),
+			'rule' => array(self::BELONGS_TO,'monitor_rule','rule_id'),
 		);
 	}
 
@@ -70,11 +65,10 @@ class log_config extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'log_name' => '日志名称',
+			'rule_id' => '日志名称',
 			'table_name' => '日志表名称',
-			'database_id' => '数据库',
-			'time_column'=>'时间字段',
-			'log_cycle'=>'日志周期(秒)',
+			'left_condition' => '左表达式',
+			'right_condition'=>'右表达式'
 		);
 	}
 

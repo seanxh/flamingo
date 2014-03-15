@@ -47,10 +47,16 @@ class  FunctionsStack{
 		
 		$method = new $type($rule_data, $key);
 		
+		/*
+		 * bracket:)
+		 * integer:9090
+		 * integer:8080
+		 * array:array
+		 * bracket:(
+		 */
 		$function_stack = $this->_stack;
 		
 		$stack2 = array();
-		
 		while( count( $function_stack ) > 0){
 			$element =  array_pop($function_stack);
 			switch($element[0] ){
@@ -108,8 +114,14 @@ class  FunctionsStack{
 			
 		}
 		
+		
 		if( count($stack2) == 1){
-			return current($stack2);
+			$current_satck  = current($stack2);;
+			if( is_array($current_satck) ){
+				if( $current_satck[0] == self::ARRAYVAL )
+					return $current_satck[1];
+			}
+			return $current_satck;
 		}else{
 			throw new Exception('calc error');
 			return false;
@@ -142,7 +154,7 @@ class  FunctionsStack{
 			$arr_val = 0;
 			switch ($value[0] ){
 				case self::INTEGER:
-					return array($arr_key,$value[0]);
+					return array($arr_key,$value[1]);
 					break;
 				case self::STRING:
 					$arr = explode(':', $value[1]);

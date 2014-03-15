@@ -9,6 +9,8 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 	
 	public $rule;
 	
+	public $_log_type ;
+	
 	private $_log_cycle;
 	
 	private $_log_time_column;
@@ -23,6 +25,18 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 	
 	protected  $_data; 
 	
+	private $_join;
+	
+	/**
+	 * 
+	 * @param string $dsn
+	 * @param string $username
+	 * @param string $password
+	 * @param string $charset
+	 * @param log_config $log_config
+	 * @param monitor_rule $rule
+	 * @param int $cycle_timestamp
+	 */
 	public function __construct($dsn,$username,$password,$charset,$log_config,$rule,$cycle_timestamp=0){
 		parent::__construct($dsn,$username,$password);
 		$this->charset=$charset;
@@ -33,6 +47,9 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 		$this->setRule($rule);
 	}
 	
+	/**
+	 * @param log_config $log_config
+	 */
 	public function setLog($log_config){
 		$this->schema =  $this->getSchema()->getTable($log_config->table_name);
 		
@@ -44,6 +61,8 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 		
 		$this->_log_cycle = $log_config->log_cycle;
 		
+		$this->_log_type = $log_config->log_type;
+		
 		if( !$this->current_cycle_timestamp )
 			$this->current_cycle_timestamp = intval( time() / $this->_log_cycle )  * $this->_log_cycle;
 	}
@@ -52,10 +71,14 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 		var_dump($this->_data);
 	}
 	
+	/**
+	 * @param monitor_rule $rule
+	 */
 	public function setRule($rule){
 		$this->rule = $rule;
-		$this->_filed = empty($rule->fields) ? '*' :  $rule->fields;
-		$this->_condition= empty($rule->conditions) ? '' :  $rule->conditions;
+		$this->_filed = empty($rule->filter_fields) ? '*' :  $rule->filter_fields;
+		$this->_condition= empty($rule->filter_conditions) ? '' :  $rule->filter_conditions;
+		$this->_join  = empty($rule->rule_join) ? array() : $rule->rule_join;
 	}
 	
 	/**
@@ -92,18 +115,56 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 		
 	}
 	
+	public function parseCondition($condition){
+		preg_match_all('/\[([^\[\]]+)\]/',$condition,$expressions);
+	
+		if( !empty($expressions)){
+			
+			$values = array();
+			foreach ($expressions[1] as  $expression){
+				$child_expression = new ChildExpression($expression);
+				$values[]  =  array(
+					$expression,
+					$child_expression->calc(array(),''),
+				);
+			}
+			foreach ($values as $value){
+				$condition = str_replace("[{$value[0]}]", $value[1], $condition);
+			}
+			
+		}
+	
+		return $condition;
+	}
+	
 	private function _get($index){
 		
-		$cycle_where = $this->_log_time_column.'>='.$this->calcCycle($index).' and '.$this->_log_time_column.'<'.$this->calcCycle($index-1);
-		if( $this->_condition ) 
-			$condition = $this->_condition.' and '.$cycle_where;
-		else
-			$condition = $cycle_where;
+		$cycle_where = '';
+		
+		if ( $this->_log_type == log_config::WITHCYCLE )
+			$cycle_where = $this->_log_time_column.'>='.$this->calcCycle($index).' and '.$this->_log_time_column.'<'.$this->calcCycle($index-1);
+		
+		$user_condition = $this->parseCondition($this->_condition);
+		
+		$condition = ''; 
+		
+		if( !empty($user_condition) ){
+			$condition = $user_condition;
+		}
+		
+		if( !empty($cycle_where) )
+			$condition = $condition.' and '.$cycle_where;
+		
+		if( empty($condition) ) throw Exception('the rule '.$this->rule->id.' was monitor as a empty condition.Please check');
 		
  		$command=$this->createCommand();
- 		$reader = $command->select($this->_filed)
- 		->from($this->_table)
- 		->where($condition)
+ 		$reader = $command->select($this->_filed)->from($this->_table);
+ 		
+ 		foreach ($this->_join as $join){
+ 			$reader = $reader->join($join->table_name,$join->left_condition.'='.$join->right_condition);
+ 		}
+ 		
+ 		$reader = $reader->where($condition)
  		->queryAll();
  		
 		return $reader;

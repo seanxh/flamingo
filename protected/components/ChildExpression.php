@@ -41,7 +41,6 @@ class ChildExpression {
 	public function preloadData($rule_data){
 		foreach ($this->_postfix_expression as $operator){
 			$arr  = $operator->preloadData();
-			
 			if( $arr ){
 				$method = 'preload'.ucfirst($arr[0]);
 				$params = array();
@@ -91,18 +90,25 @@ class ChildExpression {
 				if($type == null)//如果以数字开头，且之前没有被定义类型，则为一个整型数字的开头
 					$type = Operator::INTEGER;
 				continue;
-			}else if( ($char >= 'A' && $char<='Z') || ($char>='a' && $char <= 'z')){
+			}else if( ($char >= 'A' && $char<='Z') || ($char>='a' && $char <= 'z') || $char=='{' ){
 				$element[] = $char;
 				if($type == null)//如果以字母开头，则为函数
 					$type = Operator::FUNCTIONS;
+				elseif($type == Operator::INTEGER)//如果整数中包含除数字外的字符，则为字符串
+					$type = Operator::STRING;
 				continue;
 			}else if($char == '$'){
 				$element[] = $char;
 				if($type == null)//如果以$符开头，则为变量
 					$type = Operator::VARIABLE;
+				elseif($type == Operator::INTEGER)//如果整数中包含除数字外的字符，则为字符串
+					$type = Operator::STRING;
 				continue;
-			}else if($char == ',' || $char=='{' || $char == '}' || $char == ':' || $char=='_'){//这些字符不是开头，但可以在中间使用
+			}else if($char=='.' || $char == ',' || $char == ':' || $char=='_'){//这些字符不是开头，但可以在中间使用
 				$element[] = $char;
+				
+				if($type == Operator::INTEGER)//如果整数中包含除数字外的字符，则为字符串
+					$type = Operator::STRING;
 				continue;
 			}
 			
@@ -158,6 +164,7 @@ class ChildExpression {
 					break;
 					
 				case ')':
+				case '}':
 					if($type==Operator::FUNCTIONS){//如果当前type为function
 						
 						$func_brackets --;
@@ -222,7 +229,6 @@ class ChildExpression {
 	private function _calc($type,$data){
 		$postfix_stack = $this->_postfix_expression;
 		$stack2 = array();
-		
 		while(count($postfix_stack) > 0){
 				
 			$operator = array_shift($postfix_stack);
@@ -250,6 +256,7 @@ class ChildExpression {
 				case Operator::FUNCTIONS:
 				case Operator::INTEGER:
 				case Operator::VARIABLE:
+				case Operator::STRING:
 					if ( $type == 'data' ){
 						$value= call_user_func_array(array($operator,'getValue'), $data);
 // 						$value = $operator->getValue($rule_data,$key,$this->_func_class);
@@ -267,10 +274,11 @@ class ChildExpression {
 			}
 		}
 		
+		
 		if( count($stack2) == 1){
 			return current($stack2);
 		}else{
-			throw new Exception('calc error');
+// 			throw new Exception('calc error');
 			return false;
 		}
 	}

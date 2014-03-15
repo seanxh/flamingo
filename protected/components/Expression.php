@@ -51,6 +51,7 @@ class Expression {
 // 		echo $right_value."\n";
 		switch ($this->_compare){
 			case '=':
+			case '==':
 				$this->result = $left_value==$right_value;
 				break;
 			case '!=':
@@ -67,6 +68,9 @@ class Expression {
 				break;
 			case '<=':
 				$this->result = $left_value <= $right_value;
+				break;
+			case 'in':
+				$this->result = in_array($left_value, $right_value);
 				break;
 		}
 		
