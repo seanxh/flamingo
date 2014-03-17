@@ -74,6 +74,7 @@ class Operator{
 // 	echo $this->type ."\n";
 		if ($this->type == self::FUNCTIONS) {
 			$func_stack = $this->_func_stack->get ();
+			
 			/* foreach ($func_stack as $v){
 				 echo $v[0].':'.$v[1]."\n";
 			} */
@@ -89,6 +90,9 @@ class Operator{
 	
 	//检查是否需要preload数据
 	function checkIsNeedPreload($arr){
+		
+		$method = new Method(null,'');
+		
 		$arr2 = array();//从function栈pop出来的函数调用
 		$flag = false;
 		while( $stack = array_pop($arr) ){//依次检查函数是否需要preload，如果需要，break。并拼凑相应参数
@@ -99,69 +103,92 @@ class Operator{
 			array_push($arr2, $stack);
 		}
 
-		if( !$flag ) return false; 	
+		if( !$flag ) return false;
 		
 		//函数名
 		$func_name = $stack[1];
-		//初始括号数为1
-		$bracket = 1;
 			
-		$params = array();
-			
-		$elements = array();
-		
 		/* foreach ($arr2 as $v){
 			echo $v[0].':'.$v[1]."\n";
 		} */
-		while( $stack = array_pop($arr2)){
+		$stack2 = array();
+		
+		while( $stack = array_shift($arr2)){
 			if ( $stack[0] == FunctionsStack::BRACKET ){//如果为括号
 				if( $stack[1] == ')' ){
-					$bracket  -- ;
-					if($bracket == 0){//bracket为0，代表已经找到该函数的尾
-						break;
-					}else if($bracket == 1) {//为1则代表还有,把之前的func() push进params
-						$elements[] = $stack;
-						$params[] = $elements;
-						$elements = array();
-					}else{
-						$elements[] = $stack;
-					}
+					array_push($stack2,$stack);
 		
-				}else if($stack[1] == '('){//有子调用 ，array()
-					$elements[] = $stack;
-					$bracket ++;
-				}
+				}else if($stack[1] == '('){//有子调用
 					
-			}else if( $stack[0] == FunctionsStack::FUNCTIONS  || $stack[0] == FunctionsStack::ARRAYS){//是数组或函数名
-				$elements[] = $stack;
-			}else{//其它情况，依次PUSH进调用栈中
-				if( $bracket > 1){//如果还有括号
-					$elements[] = $stack;
-				}else{//已经没有括号了
-					$params[] = $stack;
+					$func_ele_stack = array();
+					while( count($stack2) >0){
+						$ele = array_pop($stack2);
+						if( $ele[1] !=  ')'  ){
+							array_push($func_ele_stack, $ele);
+						}else{
+							break;
+						}
+					}
+					switch ($func_ele_stack[0][0]){
+						case FunctionsStack::FUNCTIONS:
+							$function_name = array_shift($func_ele_stack);
+							$function_name = $function_name[1];
+							$params = array();
+							foreach ($func_ele_stack as $parameter){
+								$params[] = $parameter[1];
+							}
+							$val = call_user_func_array(array($method,$function_name), $params);
+							
+							if( is_int($val) || is_float($val)){
+								array_push($stack2 , array(FunctionsStack::INTEGER,$val) );
+							}else if(is_string($val)){
+								array_push($stack2 , array(FunctionsStack::STRING,$val) );
+							}else if(is_array($val)){
+								array_push($stack2 , array(FunctionsStack::ARRAYVAL,$val) );
+							}
+							
+							break;
+						default:
+							break;
+					}
+					
 				}
 					
 			}
+			
+			switch ($stack[0]){
+				case FunctionsStack::INTEGER:
+				case FunctionsStack::STRING:
+				case FunctionsStack::VARIABLE:
+				case FunctionsStack::FUNCTIONS:
+				case FunctionsStack::ARRAYS:
+					array_push($stack2, $stack);
+					break;
+			}
 		
 		}
+		
+		array_shift($stack2);
+	
+		$params = array();
+		foreach ($stack2 as $val)
+			array_unshift($params, $val); 
 		
 		$preload_params = array();
 		for($i=1;$i< count(FunctionsStack::$FUNC_PRELOAD[$func_name]); $i++ ){
-			if(is_array(FunctionsStack::$FUNC_PRELOAD[$func_name][$i])){
+			if(is_array(FunctionsStack::$FUNC_PRELOAD[$func_name][$i])){//此参数提供了默认值
+				
 				if( isset( $params[ FunctionsStack::$FUNC_PRELOAD[$func_name][$i][0] ] ) ){
-					$preload_params[] = $params[ FunctionsStack::$FUNC_PRELOAD[$func_name][$i][0] ];
+					$preload_params[] = $params[ FunctionsStack::$FUNC_PRELOAD[$func_name][$i][0] ][1];
 				}else{
 					$preload_params[] = FunctionsStack::$FUNC_PRELOAD[$func_name][$i][1];
 				}
+				
 			}else{
-				$preload_params[] = $params[FunctionsStack::$FUNC_PRELOAD[$func_name][$i]];
+				$preload_params[] = $params[FunctionsStack::$FUNC_PRELOAD[$func_name][$i]][1];
 			}
 			
 		}
-		
-		/* foreach ($preload_params as $v){
-			echo $v."\n";
-		} */
 		
 		return
 		array(
@@ -171,6 +198,11 @@ class Operator{
 		
 	}
 	
+	/**
+	 * 估计已经废弃
+	 * @param unknown $variable
+	 * @return multitype:string unknown |NULL|unknown|multitype:|number
+	 */
 	function getData($variable){
 		if(is_array($variable) && !empty($variable)){//主要是分析数组值
 			if( is_array($variable[0]) ){
@@ -213,13 +245,9 @@ class Operator{
 		$func_stack = new FunctionsStack();
 		
 		//首先将{}替换为array()的格式
-		$str = str_replace('{', 'array(', $str);
-		$str = str_replace('}', ')', $str);
-		
 		$element = array();
 		$type = null;
 		
-// 		echo $str."\n";
 		
 		for($i=0;$i<strlen($str);$i++){//挨个遍历函数调用表达式
 			$char =  $str[$i];

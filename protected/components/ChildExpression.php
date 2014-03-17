@@ -27,6 +27,10 @@ class ChildExpression {
 	 * @param string $function_class
 	 */
 	public function  __construct($expression,$function_class='Method'){
+		$expression = str_replace('{', 'arrays(', $expression);
+		$expression = str_replace('}', ')', $expression);
+		$expression = str_replace('array(', 'arrays(', $expression);
+		
 		$this->_expression = $expression;
 		$this->_postfix_expression = $this->infixToPostfix($this->_expression);
 		$this->_func_class = $function_class;
@@ -47,9 +51,8 @@ class ChildExpression {
 				$method = 'preload'.ucfirst($arr[0]);
 				$params = array();
 				for ($i=0;$i<count($arr[1]); $i++){
-					$params[] = $operator->getData($arr[1][$i]);
+					$params[] =$arr[1][$i];
 				}
-				
 				call_user_func_array(array($rule_data,$method),$params);
 			}
 				
@@ -270,14 +273,10 @@ class ChildExpression {
 				case Operator::STRING:
 					if ( $type == 'data' ){
 						$value= call_user_func_array(array($operator,'getValue'), $data);
-// 						$value = $operator->getValue($rule_data,$key,$this->_func_class);
 					} else{
 						$value  = 0;
 					}
-					// 					echo $operator."\n";
-					/* if ($operator->type == Operator::FUNCTIONS ){
-					 echo $operator."::$value\n";
-					}  */
+				
 					array_push($stack2,  $value);
 					break;
 				default:

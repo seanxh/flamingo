@@ -11,8 +11,8 @@ class Method {
 	}
 	
 	public function prev($column,$group,$cycle=1){
-// 		var_dump($this->_rule_data[$cycle]);
-// 		var_dump($this->_key);
+// 		var_dump( $column );
+// 		var_dump( $group );
 		if( isset( $this->_rule_data[ $cycle ] [ $this->_key ] [ $column ]) )
 			return $this->_rule_data[ $cycle ] [ $this->_key ] [ $column ];
 		return 0;
@@ -30,4 +30,53 @@ class Method {
 		
 	}
 	
+	public function arrays(){
+		$stack =  func_get_args() ;
+		$return_arr = array();
+		foreach ($stack as $val){
+			$arr_key  = 0;
+			$arr_val = 0;
+			if( is_int($val) || is_float($val)) {
+					array_push($return_arr, $val);
+			}else if(is_string($val)){
+					$arr = explode(':', $val );
+					if(count($arr ) > 1){
+						$arr_key = $arr[0];
+						$arr_val = $arr[1];
+					}else{
+						$arr_val = $val;
+					}
+			
+					if( strstr($arr_key, '$') === 0 ){
+						$arr_key = $this->_getVal($arr_key, $rule_data, $key);
+					}
+			
+					if( strstr($arr_val, '$') === 0 ){
+						$arr_val = $this->_getVal($arr_val, $rule_data, $key);
+					}
+					if( $arr_key === 0) {
+						array_push($return_arr, $val);
+					}else{
+						$return_arr[$arr_key] = $arr_val;
+					}
+					
+			}
+		}
+		
+		return $return_arr;
+				
+	}
+
+	/*
+	 * 获取一个变量的值
+	*/
+	private function _getVal($val){
+	
+		$val = ltrim($val,'$');
+		if(isset( $this->_rule_data[0][$this->_key][$val] )){
+			return $this->_rule_data[0][$this->_key][$val];
+		}
+		return 0;
+	
+	}
 }

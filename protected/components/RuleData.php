@@ -91,6 +91,7 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 	 * @param number $cycle
 	 */
 	public function preloadGroup($group,$cycle=1){
+		
 		$first = $this->offsetGet(0);
 		
 		$first_group = array();

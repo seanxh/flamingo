@@ -17,6 +17,4 @@ class AlertData extends RuleData{
 		return $this->_data[$offset];
 	}
 	
-	
-	
 }

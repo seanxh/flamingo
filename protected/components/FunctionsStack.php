@@ -33,9 +33,9 @@ class  FunctionsStack{
 	}
 	
 	function push($type,$value){
-		if($type == self::FUNCTIONS && $value == self::ARRAYS){
+		/* if($type == self::FUNCTIONS && $value == self::ARRAYS){
 			$type = self::ARRAYS;
-		}
+		} */
 		$this->_stack[] = array($type,$value);
 	}
 	
@@ -74,20 +74,6 @@ class  FunctionsStack{
 							}
 						}
 						switch ($func_ele_stack[0][0]){
-							case self::ARRAYS://如果是数组
-								//array( array('array','array'),array('integer':'xxx'))
-								array_shift($func_ele_stack);
-								$arr = array();
-								foreach ($func_ele_stack as $value){
-									list($key,$arr_val) = $this->_getArrayVal($value,$rule_data, $key);
-									if( $key != 0 ){
-										$arr[$key] = $arr_val;
-									}else{
-										array_push($arr, $arr_val);
-									}
-								}
-								array_push($stack2, array(self::ARRAYVAL,$arr) );
-								break;
 							case self::FUNCTIONS:
 								$function_name = array_shift($func_ele_stack);
 								$function_name = $function_name[1];
@@ -95,7 +81,17 @@ class  FunctionsStack{
 								foreach ($func_ele_stack as $parameter){
 									$params[] = $parameter[1];
 								}
-								array_push($stack2 , call_user_func_array(array($method,$function_name), $params) );
+								
+								$val = call_user_func_array(array($method,$function_name), $params);
+								
+								if( is_int($val) || is_float($val)){
+									array_push($stack2 , array(FunctionsStack::INTEGER,$val) );
+								}else if(is_string($val)){
+									array_push($stack2 , array(FunctionsStack::STRING,$val) );
+								}else if(is_array($val)){
+									array_push($stack2 , array(FunctionsStack::ARRAYVAL,$val) );
+								}
+								
 								break;
 							default:
 								break;
@@ -114,11 +110,9 @@ class  FunctionsStack{
 			
 		}
 		
-		
 		if( count($stack2) == 1){
 			$current_satck  = current($stack2);;
 			if( is_array($current_satck) ){
-				if( $current_satck[0] == self::ARRAYVAL )
 					return $current_satck[1];
 			}
 			return $current_satck;
@@ -127,55 +121,6 @@ class  FunctionsStack{
 			return false;
 		}
 		
-	}
-	
-	/*
-	 * 获取一个变量的值
-	 */
-	private function _getVal($val, $rule_data, $key){
-		
-		$val = ltrim($val,'$');
-		if(isset( $rule_data[0][$key][$val] )){
-			return $rule_data[0][$key][$val];
-		}
-		return 0;
-		
-	}
-	
-	/**
-	 * 获取一个数组的值
-	 * @param unknown $value
-	 * @param unknown $rule_data
-	 * @param unknown $key
-	 * @return multitype:number unknown |multitype:Ambigous <unknown, number> number
-	 */
-	private function _getArrayVal($value,$rule_data,$key){
-			$arr_key  = 0;
-			$arr_val = 0;
-			switch ($value[0] ){
-				case self::INTEGER:
-					return array($arr_key,$value[1]);
-					break;
-				case self::STRING:
-					$arr = explode(':', $value[1]);
-					if(count($arr ) > 1){
-						$arr_key = $arr[0];
-						$arr_val = $arr[1];
-					}else{
-						$arr_val = $value[1];
-					}
-						
-					if( strstr($arr_key, '$') === 0 ){
-						$arr_key = $this->_getVal($arr_key, $rule_data, $key);
-					}
-						
-					if( strstr($arr_val, '$') === 0 ){
-						$arr_val = $this->_getVal($arr_val, $rule_data, $key);
-					}
-						
-					return array($arr_key,$arr_val);
-			}
-			
 	}
 	
 }

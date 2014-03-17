@@ -82,7 +82,6 @@ class Condition {
 			$alert_data[$cycle] = $value;
 		}
 		
-// 		$alert_data->pp();
 		
 		return $alert_data;
 		
