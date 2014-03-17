@@ -1,4 +1,8 @@
 <?php
+/**
+ * 监控策略数据源
+ * @author xuhao05
+ */
 class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 	
 	public $current_cycle_timestamp;
@@ -137,6 +141,11 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 		return $condition;
 	}
 	
+	/**
+	 * 根据Index 获取某个周期的数据
+	 * @param int $index
+	 * @return array
+	 */
 	private function _get($index){
 		
 		$cycle_where = '';
@@ -146,14 +155,13 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 		
 		$user_condition = $this->parseCondition($this->_condition);
 		
-		$condition = ''; 
+		$condition = $cycle_where;
 		
-		if( !empty($user_condition) ){
+		if( empty($condition) ){
 			$condition = $user_condition;
-		}
-		
-		if( !empty($cycle_where) )
+		}else if(  !empty($user_condition) ){
 			$condition = $condition.' and '.$cycle_where;
+		}
 		
 		if( empty($condition) ) throw Exception('the rule '.$this->rule->id.' was monitor as a empty condition.Please check');
 		
@@ -190,6 +198,14 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 	}
 	
 	/**
+	 *  判断该时间点属于哪个周期。
+	 */
+	public function calcCycleIndex($str_time){
+		$time = strtotime($str_time);
+		return ceil( (  $this->current_cycle_timestamp - $time ) /  $this->_log_cycle ) ;
+	}
+	
+	/**
 	 * 根据周期索引，返回周期的起始时间
 	 * @param unknown $index
 	 * @return number|string
@@ -201,10 +217,9 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 			return date( "'Y-m-d H:i:s'",$this->current_cycle_timestamp - $index*$this->_log_cycle );
 	}
 	
-	public function calcCycleIndex($str_time){
-		$time = strtotime($str_time);
-		return ceil( (  $this->current_cycle_timestamp - $time ) /  $this->_log_cycle ) ;
-	}
+	
+	// Interface实现
+	//countable,iterable,arrayaccess实现
 	
 	public function count() {
 		return count($this->_data);

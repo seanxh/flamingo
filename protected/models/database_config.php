@@ -5,9 +5,12 @@
  *
  * The followings are the available columns in table 'budget_unit':
  * @property integer $id
- * @property string $name
- * @property string $op_users
- * @property string $log
+ * @property string $type
+ * @property string $dbname
+ * @property string $host
+ * @property string $user
+ * @property string $passwd
+ * @property int @port
  */
 class database_config extends CActiveRecord
 {

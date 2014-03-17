@@ -5,11 +5,22 @@
  * @author seanxh
  */
 class Expression {
-	
+	/**
+	 * 左表达式
+	 * @var ChildExpression
+	 */
 	private $_left_expression = null;
 	
+	/**
+	 * 右表达式
+	 * @var ChildExpression
+	 */
 	private $_right_expression = null;
 	
+	/**
+	 * 逻辑运算符
+	 * @var unknown
+	 */
 	public $logic = null;
 	
 	private $_compare = null;
@@ -22,14 +33,16 @@ class Expression {
 	
 	/**
 	 * 构造方法
-	 * @param unknown $left_expression
-	 * @param unknown $right_expression
-	 * @param unknown $compare
-	 * @param unknown $logic
+	 * @param string $left_expression 左表达式
+	 * @param string $right_expression 右表达式
+	 * @param string $compare 比较运算符
+	 * @param string $logic 逻辑运算符
 	 */
 	function __construct($left_expression,$right_expression,$compare,$logic){
 		//子表达式
 		$this->_left_expression = new ChildExpression($left_expression);
+		
+// 		echo $this->_left_expression;
 		$this->_right_expression = new ChildExpression($right_expression);
 		
 		$this->_compare = $compare;
@@ -37,11 +50,20 @@ class Expression {
 		
 	}
 	
+	/**
+	 * 提前加载并Group数据
+	 * @param RuleData $rule_data
+	 */
 	function preload($rule_data){
 		$this->_left_expression->preloadData($rule_data);
 	}
-	
-	
+
+	/**
+	 * 依据数据源，计算此表达式的布尔值 True/False
+	 * @param RuleData $rule_data
+	 * @param string/int $key
+	 * @return boolean
+	 */
 	function bool($rule_data,$key){
 // 		echo $this->_left_expression."\n";
 		$left_value = $this->_left_expression->calc($rule_data,$key);
@@ -77,6 +99,5 @@ class Expression {
 		return $this->result ;
 		
 	}	
-	
 	
 }

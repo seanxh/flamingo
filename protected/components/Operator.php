@@ -205,8 +205,8 @@ class Operator{
 	}
 	
 	/**
-	 * 分析函数调用
-	 * @param unknown $str
+	 * 分析函数调用栈
+	 * @param string $str
 	 * @return FunctionsStack
 	 */
 	function analyseFuncStack($str){
@@ -257,39 +257,42 @@ class Operator{
 			}else if($char == ':' || $char=='_' || $char=='.'){//如果碰到以下字符，直接入栈
 				$element[] = $char;
 				continue;
+			}else if( $char=='('){//如果碰到(，则当前type肯定为function
+				$type = FunctionsStack::FUNCTIONS;
+				if(!empty($element)){
+					$func_stack->push( FunctionsStack::BRACKET, '(' );
+					$func_stack->push($type ,implode('', $element) );
+					$element = array();
+					$type = null;
+				}
+			}else if($char == ')'){
+				if($type == FunctionsStack::PENDING){//如果碰到)，且之前处于未决状态，则应该是一个字符串。
+					$type = FunctionsStack::STRING;
+				}
+				if(!empty($element)){//如果)之前的element不为空，把element都弹出入 function stack，再将括号入栈
+					$func_stack->push($type ,implode('', $element) );
+					$func_stack->push( FunctionsStack::BRACKET, ')' );
+					$element = array();
+					$type = null;
+				}else{
+					$func_stack->push( FunctionsStack::BRACKET, ')' );
+				}
 			}
 			
-			switch ($char){
+/* 			switch ($char){
 				case '('://如果碰到(，则当前type肯定为function
-					$type = FunctionsStack::FUNCTIONS;
-					if(!empty($element)){
-						$func_stack->push( FunctionsStack::BRACKET, '(' );
-						$func_stack->push($type ,implode('', $element) );
-						$element = array();
-						$type = null;
-					}
+					
 					break;
 				case ')':
-					if($type == FunctionsStack::PENDING){//如果碰到)，且之前处于未决状态，则应该是一个字符串。
-						$type = FunctionsStack::STRING;
-					}
-					if(!empty($element)){//如果)之前的element不为空，把element都弹出入 function stack，再将括号入栈
-						$func_stack->push($type ,implode('', $element) );
-						$func_stack->push( FunctionsStack::BRACKET, ')' );
-						$element = array();
-						$type = null;
-					}else{
-						$func_stack->push( FunctionsStack::BRACKET, ')' );
-					}
+					
 					break;
-			}
+			} */
 			
 		}
 
-/* 		foreach ($func_stack->get() as $k=>$v){
+	/* foreach ($func_stack->get() as $k=>$v){
 			echo $v[0].':' . $v[1]."\n";
-		}
-		 */
+		} */
 		return $func_stack;
 	}
 	

@@ -11,15 +11,9 @@ class ChildExpression {
 	private $_expression;
 	
 	/**
-	 * @var stack 
+	 * 后缀表达式
+	 * @var Array[Operator]
 	 */
-	private $_postfix_notation;
-	
-	/**
-	 * @var RuleData
-	 */
-// 	private $_rule_data;
-	
 	private $_postfix_expression; 
 	
 	/**
@@ -27,15 +21,23 @@ class ChildExpression {
 	 */
 	private $_func_class;
 	
+	/**
+	 * 创建子表达式，并将中缀表达式转为中缀 
+	 * @param string $expression
+	 * @param string $function_class
+	 */
 	public function  __construct($expression,$function_class='Method'){
 		$this->_expression = $expression;
-// 		$this->_rule_data = $rule_data;
 		$this->_postfix_expression = $this->infixToPostfix($this->_expression);
 		$this->_func_class = $function_class;
 	}	
 	
 	public function __toString(){
-		return $this->_expression;
+		$str =  $this->_expression."\n";
+		foreach ($this->_postfix_expression as $v){
+		 $str .=  $v."\n";
+		}
+		return $str;
 	}
 	
 	public function preloadData($rule_data){
@@ -110,96 +112,101 @@ class ChildExpression {
 				if($type == Operator::INTEGER)//如果整数中包含除数字外的字符，则为字符串
 					$type = Operator::STRING;
 				continue;
+			}else if($char == '+' || $char == '-' || $char == '*' || $char=='/'){ //如果是运算符号
+				if($type== Operator::FUNCTIONS){//如果在一个函数中，压入elements中，继续读取运算式
+					$element[]= $char;
+					break;
+				}
+					
+				//如果element不为空，将element清空，入栈
+				if( !empty($element) ){
+					$variable = implode('', $element);
+					$stack2[] = new Operator($type, $variable);
+					$element = array();
+					$type = null;
+				}
+					
+				//如果当前运算符优先级高于栈顶运算符，将当前运算符入栈。
+				//否则，将运算符栈中的元素依次弹出，直到碰到栈顶运算符优先级低于当前运算符
+				if( $this->operatorCompare($char,end($stack1)) > 0 ){
+					$stack1[] = $char;
+				}else{
+					while(count($stack1) > 0){
+						$operator = end($stack1);
+						if( $this->operatorCompare($char,$operator ) > 0 ){
+							$stack1[] = $char;
+							break;
+						}else{
+							$stack2[] = new Operator(Operator::OPERATOR, array_pop($stack1));
+						}
+					}
+				}
+			}else if( $char == '(' ){//如果是左括号，并且不是在函数中，则把(入到stack1栈
+				if($type==Operator::FUNCTIONS){
+					$element[]= $char;
+					$func_brackets ++;
+				}else{
+					$stack1[] = $char;
+				
+					if( !empty($element) ){//如果elemnt不为空，入到stack2中
+						$variable = implode('', $element);
+						$stack2[] = new Operator($type, $variable);
+						$element = array();
+						$type = null;
+					}
+				
+				}
+			}else if( $char == ')' || $char == '}'){
+				if($type==Operator::FUNCTIONS){//如果当前type为function
+				
+					$func_brackets --;
+					if($func_brackets == 0){//如果左右括号个数正好是偶数
+						$element[]= $char;
+							
+						$variable = implode('', $element);
+						$stack2[] = new Operator($type, $variable);
+							
+						$element = array();
+						$type = null;
+					}else{//不是偶数，说明函数还未读完
+						$element[]= $char;
+					}
+				
+				
+				}else{//非function，把当前element入栈并清空
+				
+					$variable = implode('', $element);
+					$stack2[] = new Operator($type, $variable);
+					$element = array();
+					$type = null;
+				
+					while(count($stack1) > 0){
+						$operator = array_pop($stack1);
+						if( $operator == '(' ){
+							break;
+						}else{
+							$stack2[] = new Operator(Operator::OPERATOR, $operator);
+						}
+					}
+				}
 			}
 			
-			switch ($char){//如果是运算符号
+			/* switch ($char){
 				case '+':
 				case '-':
 				case '*':
 				case '/':
-					if($type== Operator::FUNCTIONS){//如果在一个函数中，压入elements中，继续读取运算式
-						$element[]= $char;
-						break;
-					}
 					
-					//如果element不为空，将element清空，入栈
-					if( !empty($element) ){
-						$variable = implode('', $element);
-						$stack2[] = new Operator($type, $variable);
-						$element = array();
-						$type = null;
-					}
-					
-					//如果当前运算符优先级高于栈顶运算符，将当前运算符入栈。
-					//否则，将运算符栈中的元素依次弹出，直到碰到栈顶运算符优先级低于当前运算符
-					if( $this->operatorCompare($char,end($stack1)) > 0 ){
-						$stack1[] = $char;
-					}else{
-						while(count($stack1) > 0){
-							$operator = end($stack1);
-							if( $this->operatorCompare($char,$operator ) > 0 ){
-								$stack1[] = $char;
-								break;
-							}else{
-								$stack2[] = new Operator(Operator::OPERATOR, array_pop($stack1));
-							}
-						}
-					}
 					break;
-				case '('://如果是左括号，并且不是在函数中，则把(入到stack1栈
-					if($type==Operator::FUNCTIONS){
-						$element[]= $char;
-						$func_brackets ++;
-					}else{
-						$stack1[] = $char;
-						
-						if( !empty($element) ){//如果elemnt不为空，入到stack2中
-							$variable = implode('', $element);
-							$stack2[] = new Operator($type, $variable);
-							$element = array();
-							$type = null;
-						}
-						
-					}
+				case '(':
+					
 					break;
 					
 				case ')':
 				case '}':
-					if($type==Operator::FUNCTIONS){//如果当前type为function
-						
-						$func_brackets --;
-						if($func_brackets == 0){//如果左右括号个数正好是偶数
-							$element[]= $char;
-							
-							$variable = implode('', $element);
-							$stack2[] = new Operator($type, $variable);
-							
-							$element = array();
-							$type = null;
-						}else{//不是偶数，说明函数还未读完
-							$element[]= $char;
-						}
-						
-						
-					}else{//非function，把当前element入栈并清空
-						
-						$variable = implode('', $element);
-						$stack2[] = new Operator($type, $variable);
-						$element = array();
-						$type = null;
-						
-						while(count($stack1) > 0){
-							$operator = array_pop($stack1);
-							if( $operator == '(' ){
-								break;
-							}else{
-								$stack2[] = new Operator(Operator::OPERATOR, $operator);
-							}
-						}
-					}
 					break;
 					
-			}
+			} */
 			
 		}
 		
@@ -220,6 +227,10 @@ class ChildExpression {
 		
 	}
 	
+	/**
+	 * 中缀转后缀用来比较运算符优先级
+	 * @return number
+	 */
 	private function operatorCompare($operator1,$operator2){
 		$operator = array('*'=>2,'/'=>2,'+'=>1,'-'=>1,'#'=>0);
 		return $operator[$operator1] - $operator[$operator2];
@@ -284,7 +295,7 @@ class ChildExpression {
 	}
 	
 	/**
-	 * 计算表达式
+	 * 计算该子表达式
 	 * @param unknown $rule_data
 	 * @param unknown $key
 	 * @throws Exception

@@ -75,6 +75,7 @@ class log_config extends CActiveRecord
 			'database_id' => '数据库',
 			'time_column'=>'时间字段',
 			'log_cycle'=>'日志周期(秒)',
+			'log_type'=>'日志类型',
 		);
 	}
 

@@ -5,9 +5,9 @@
  *
  * The followings are the available columns in table 'budget_unit':
  * @property integer $id
- * @property string $name
- * @property string $op_users
- * @property string $log
+ * @property string $condition_id
+ * @property string $left_or_right
+ * @property string $expression
  */
 class monitor_operation_expression extends CActiveRecord
 {
@@ -65,11 +65,9 @@ class monitor_operation_expression extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'log_name' => '日志名称',
-			'table_name' => '日志表名称',
-			'database_id' => '数据库',
-			'time_column'=>'时间字段',
-			'log_cycle'=>'日志周期(秒)',
+			'condition_id'=>'报警判断条件ID',
+			'left_or_right' => '是左式还是右式',
+			'expression' => '表达式',
 		);
 	}
 

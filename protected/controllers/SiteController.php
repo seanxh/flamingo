@@ -11,20 +11,25 @@ class SiteController extends CController{
 		
 // 		$time = time();
 		$time = strtotime('2014-03-09 23:19:00');
-		$monitor_id = 3;
+		$monitor_id = 1;
+		
 		$rule = monitor_rule::model()->findByPk($monitor_id);
 		
+		//报警策略的日志配置
 		$log_config = $rule->log_config;
 		
-		
+		//如果是指定周期的日志，则计算周期
 		$cycle_time = ($log_config->log_type) ? time() :  intval($time/$log_config->log_cycle)*$log_config->log_cycle;
 		
+		//日志的数据库配置
 		$database = $log_config->database;
 		
 		//等待本周期的数据入库
-		//  		sleep($rule->wait_time);
+ 		sleep($rule->wait_time);
 		
 		$log_dsn = $database->type.':host='.$database->host.';port='.$database->port.';dbname='.$database->dbname;
+		
+		//监控策略数据源
 		$rule_data = new RuleData($log_dsn,$database->user,$database->passwd, 'utf8',$log_config,$rule,$cycle_time);
 			
 		//监控策略条件表达式(一个监控策略有可能有多个表达式，多个表达式可能是逻辑“或”，“与”的关系
@@ -44,11 +49,10 @@ class SiteController extends CController{
 			}
 			
 // 			var_dump($expression['right']);exit;
-			//右式必须是一个数字
-// 			if( !is_numeric($expression['right']) ) throw new Exception('右式必须是一个表达式');
 			
 			$expressions[]  = new Expression($expression['left'], $expression['right'], $expression['compare'] , $expression['logic']);
 		}
+		
 		$condition = new Condition($expressions,$rule_data);
 		$condition->preload();
 		$alert_data = $condition->judgeCondition();

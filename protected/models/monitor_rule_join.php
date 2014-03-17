@@ -5,9 +5,10 @@
  *
  * The followings are the available columns in table 'budget_unit':
  * @property integer $id
- * @property string $name
- * @property string $op_users
- * @property string $log
+ * @property int $rule_id
+ * @property string $table_name
+ * @property string $left_condition
+ * @property string $right_condition
  */
 class monitor_rule_join extends CActiveRecord
 {
