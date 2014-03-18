@@ -58,6 +58,7 @@ class SiteController extends CController{
 		$alert_data = $condition->judgeCondition();
 // 		echo "------------------------------------------------\n";
 
+
 		if( count($alert_data) > 0 ){
 			$alarm = new Alarm($rule);
 			$alarm->multiMail($alert_data);

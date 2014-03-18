@@ -15,21 +15,27 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 	
 	public $_log_type ;
 	
-	private $_log_cycle;
+	protected  $_log_cycle;
 	
-	private $_log_time_column;
+	protected $_log_time_column;
 	
-	private $_log_time_column_type;
+	protected $_log_time_column_type;
 	
-	private $_condition;
+	protected $_condition;
 	
-	private $_table;
+	protected $_table;
 	
-	private $_filed;
+	protected $_filed;
 	
 	protected  $_data; 
 	
-	private $_join;
+	protected $_join;
+	
+	public $dsn;
+	public $username;
+	public $password;
+	
+	public $charset;
 	
 	/**
 	 * 
@@ -42,19 +48,31 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 	 * @param int $cycle_timestamp
 	 */
 	public function __construct($dsn,$username,$password,$charset,$log_config,$rule,$cycle_timestamp=0){
-		parent::__construct($dsn,$username,$password);
-		$this->charset=$charset;
+		$this->dsn = $dsn;
+		$this->username = $username;
+		$this->password = $password;
+		
+		parent::__construct($this->dsn,$this->username,$this->password);
+		
+ 		$this->charset=$charset;
 		$this->active=true;
+		
 		$this->current_cycle_timestamp = $cycle_timestamp;
 		
 		$this->setLog($log_config);
 		$this->setRule($rule);
 	}
 	
+	
+	public function getTable(){
+		return $this->_table;
+	}
+	
 	/**
 	 * @param log_config $log_config
 	 */
 	public function setLog($log_config){
+		$this->log_config = $log_config;
 		$this->schema =  $this->getSchema()->getTable($log_config->table_name);
 		
 		$this->_table = $log_config->table_name;
@@ -87,7 +105,7 @@ class RuleData extends  CDbConnection implements ArrayAccess,Iterator,Countable{
 	
 	/**
 	 * 预加载函数
-	 * @param unknown $group
+	 * @param array $group
 	 * @param number $cycle
 	 */
 	public function preloadGroup($group,$cycle=1){

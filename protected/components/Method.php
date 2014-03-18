@@ -1,6 +1,9 @@
 <?php
 class Method {
 	
+	/**
+	 * @var RuleData
+	 */
 	private $_rule_data = null;
 	
 	private $_key = null;
@@ -67,16 +70,34 @@ class Method {
 				
 	}
 
+	public function join($table,$field_map,$val,$fields){
+		
+		$join = explode('.', $join_str);
+		$command=$this->_rule_data->createCommand();
+		$reader = $command->select($table.'.'.$fields)->from( $this->_rule_data->getTable() )
+		 -> join($table,$this->_rule_data->getTable().'.'.$field_map[0].'='.$table.'.'.$field_map[1])
+		-> where($this->_rule_data->getTable().'.'.$field_map[0].'=\''.$val.'\'')->queryRow(0);
+		
+		if($reader)
+			return current($reader);
+		
+		return null;
+	}
+	
 	/*
 	 * 获取一个变量的值
 	*/
-	private function _getVal($val){
+	private function _getVal($val,$default=0){
 	
 		$val = ltrim($val,'$');
 		if(isset( $this->_rule_data[0][$this->_key][$val] )){
 			return $this->_rule_data[0][$this->_key][$val];
 		}
-		return 0;
+		return $default;
 	
+	}
+	
+	public function getVal($val,$default=0){
+		return $this->_getVal($val,$default);
 	}
 }

@@ -28,6 +28,14 @@ class  FunctionsStack{
 		
 	}
 	
+	public function __toString(){
+		$str = '';
+		foreach($this->_stack as $stack){
+			$str .= $stack[0].':'.$stack[1]."\n";
+		}
+		return $str;
+	}
+	
 	public function get(){
 		return $this->_stack;
 	}
@@ -99,9 +107,20 @@ class  FunctionsStack{
 						
 					}
 					break;
+				case self::VARIABLE:
+					
+					$val = call_user_func_array(array($method,'getVal'), array($element[1]) );
+					
+					if( is_int($val) || is_float($val)){
+						array_push($stack2 , array(FunctionsStack::INTEGER,$val) );
+					}else if(is_string($val)){
+						array_push($stack2 , array(FunctionsStack::STRING,$val) );
+					}else if(is_array($val)){
+						array_push($stack2 , array(FunctionsStack::ARRAYVAL,$val) );
+					}
+					break;
 				case self::INTEGER:
 				case self::STRING:
-				case self::VARIABLE:
 				case self::FUNCTIONS:
 				case self::ARRAYS:
 					array_push($stack2, $element);

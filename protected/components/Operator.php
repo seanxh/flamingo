@@ -34,6 +34,8 @@ class Operator{
 		
 		switch ($this->type) {
 			case self::FUNCTIONS :
+// 				echo $this."\n";
+// 				echo $this->_func_stack;
 				return $this->_func_stack->getValue($rule_data,$key,$func_class);
 				break;
 			case self::VARIABLE :

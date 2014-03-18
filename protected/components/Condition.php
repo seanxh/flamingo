@@ -32,7 +32,7 @@ class Condition {
 	
 	public function judgeCondition(){
 	
-		$alert_data = new AlertData($this->rule_data->current_cycle_timestamp);
+		$alert_data = new AlertData($this->rule_data);
 		$alert_arr = array();
 		 
 		foreach( $this->rule_data[0] as $key=>$value){

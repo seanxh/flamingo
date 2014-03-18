@@ -194,23 +194,6 @@ class ChildExpression {
 				}
 			}
 			
-			/* switch ($char){
-				case '+':
-				case '-':
-				case '*':
-				case '/':
-					
-					break;
-				case '(':
-					
-					break;
-					
-				case ')':
-				case '}':
-					break;
-					
-			} */
-			
 		}
 		
 		if( !empty($element) ){//将剩余的element入栈

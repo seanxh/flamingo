@@ -1,13 +1,15 @@
 <?php
 class AlertData extends RuleData{
 	
-	public function __construct($cycle_timestamp=0){
-		$this->current_cycle_timestamp = $cycle_timestamp;
-	
+	/**
+	 * @param RuleData $rule_data
+	 */
+	public function __construct($rule_data){
+		parent::__construct( $rule_data->dsn,  $rule_data->username, $rule_data->password, $rule_data->charset, $rule_data->log_config, $rule_data->rule,$rule_data->current_cycle_timestamp);
 	}
 	
+	
 	public function  preloadGroup(){
-		
 	}
 	
 	public function offsetGet ($offset) {
